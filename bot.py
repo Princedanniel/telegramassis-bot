@@ -17,7 +17,8 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-TOKEN = "8656453226:AAG2FLDklD3npIX7yvPESAiptHvGitu6d_0"
+import os
+TOKEN = os.getenv("BOT_TOKEN")
 
 ALLOWED_LINK = "vestoradigital.com"
 
@@ -110,19 +111,50 @@ async def punish(user_id, chat_id, context):
         logging.error(f"Punish error: {e}")
 
 
-# ✅ DELETE JOIN/LEFT MESSAGES (STABLE)
-async def delete_service_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+
+async def welcome_new_members(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message
 
-    if not message:
+    if not message or not message.new_chat_members:
         return
 
     try:
-        if message.new_chat_members or message.left_chat_member:
-            await message.delete()
-            logging.info("Deleted service message")
+        for member in message.new_chat_members:
+            # 👤 Tag user properly
+            if member.username:
+                user_tag = f"@{member.username}"
+            else:
+                user_tag = member.mention_html()
+
+            welcome_text = (
+                f"👋 Welcome {user_tag}!\n\n"
+                "You're welcome to Vestora Digital 🚀\n"
+                "We build, grow and earn together.\n\n"
+                "⚠️ Follow group rules and avoid spam.\n"
+                "👇 Click below to login to your account"
+            )
+
+            # 🔘 Button
+            keyboard = [
+                [InlineKeyboardButton("🚀 Visit Website", url="https://www.vestoradigital.com/login.php")]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+
+            await message.reply_html(
+                welcome_text,
+                reply_markup=reply_markup
+            )
+
+        # 🧹 Delete default join message
+        await message.delete()
+
+        logging.info("Welcome message with button sent")
+
     except Exception as e:
-        logging.error(f"Service message delete error: {e}")
+        logging.error(f"Welcome error: {e}")
+
 
 
 # ✅ ERROR HANDLER (VERY IMPORTANT)
@@ -136,7 +168,7 @@ if __name__ == "__main__":
 
     # Handlers
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.StatusUpdate.ALL, delete_service_messages))
+    app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, moderate))
 
     # Error handler
