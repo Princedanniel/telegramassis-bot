@@ -142,13 +142,17 @@ async def welcome_new_members(update: Update, context: ContextTypes.DEFAULT_TYPE
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
 
+            import asyncio
+
             await message.reply_html(
                 welcome_text,
                 reply_markup=reply_markup
             )
 
-        # 🧹 Delete default join message
-        await message.delete()
+            # ⏳ Small delay before deleting
+            await asyncio.sleep(1)
+
+            await message.delete()
 
         logging.info("Welcome message with button sent")
 
