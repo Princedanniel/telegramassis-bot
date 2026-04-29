@@ -187,7 +187,7 @@ if __name__ == "__main__":
     app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, moderate))
 
-    app.add_handler(MessageHandler(filters.ALL, get_chat_id))
+    app.add_handler(MessageHandler(filters.TEXT | filters.PHOTO | filters.VIDEO, get_chat_id))
 
     # Error handler
     app.add_error_handler(error_handler)
