@@ -166,6 +166,18 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
     logging.error(msg="Exception while handling update:", exc_info=context.error)
 
 
+    async def get_chat_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        chat_id = update.effective_chat.id
+        user_id = update.effective_user.id if update.effective_user else "Unknown"
+
+        print(f"CHAT ID: {chat_id}")
+        print(f"USER ID: {user_id}")
+
+    except Exception as e:
+        logging.error(f"Chat ID error: {e}")
+
+
 # ✅ MAIN
 if __name__ == "__main__":
     app = ApplicationBuilder().token(TOKEN).build()
@@ -174,6 +186,8 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, moderate))
+
+    app.add_handler(MessageHandler(filters.ALL, get_chat_id))
 
     # Error handler
     app.add_error_handler(error_handler)
